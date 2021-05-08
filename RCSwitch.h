@@ -10,6 +10,7 @@
   - Frank Oltmanns / <first name>.<last name>(at)gmail(dot)com
   - Max Horn / max(at)quendi(dot)de
   - Robert ter Vehn / <first name>.<last name>(at)gmail(dot)com
+  - Simone Pernice / <last name>(at)libero(dot)it
   
   Project home: https://github.com/sui77/rc-switch/
 
@@ -171,6 +172,10 @@ class RCSwitch {
     volatile static unsigned int nReceivedBitlength;
     volatile static unsigned int nReceivedDelay;
     volatile static unsigned int nReceivedProtocol;
+    #if defined(RaspberryPi) // Raspberry Pi
+    volatile static bool nReceiverISRAttached;
+    volatile static bool nReceiverSkipISR;
+    #endif
     const static unsigned int nSeparationLimit;
     /* 
      * timings[0] contains sync timing, followed by a number of bits

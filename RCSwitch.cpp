@@ -14,6 +14,7 @@
   - Johann Richard / <first name>.<last name>(at)gmail(dot)com
   - Vlad Gheorghe / <first name>.<last name>(at)gmail(dot)com https://github.com/vgheo
   - Matias Cuenca-Acuna 
+  - Simone Pernice / <last name>(at)libero(dot)it
   
   Project home: https://github.com/sui77/rc-switch/
 
@@ -102,6 +103,10 @@ volatile unsigned long RCSwitch::nReceivedValue = 0;
 volatile unsigned int RCSwitch::nReceivedBitlength = 0;
 volatile unsigned int RCSwitch::nReceivedDelay = 0;
 volatile unsigned int RCSwitch::nReceivedProtocol = 0;
+#if defined(RaspberryPi) // Raspberry Pi
+volatile bool RCSwitch::nReceiverISRAttached = false;
+volatile bool RCSwitch::nReceiverSkipISR = true;
+#endif
 int RCSwitch::nReceiveTolerance = 60;
 const unsigned int VAR_ISR_ATTR RCSwitch::nSeparationLimit = 4300;
 // separationLimit: minimum microseconds between received codes, closer codes are ignored.
@@ -556,7 +561,9 @@ void RCSwitch::enableReceive() {
     RCSwitch::nReceivedValue = 0;
     RCSwitch::nReceivedBitlength = 0;
 #if defined(RaspberryPi) // Raspberry Pi
-    wiringPiISR(this->nReceiverInterrupt, INT_EDGE_BOTH, &handleInterrupt);
+    if (! RCSwitch::nReceiverISRAttached) wiringPiISR(this->nReceiverInterrupt, INT_EDGE_BOTH, &handleInterrupt); //to avoid attaching more than once, since on Raspberry ISR cannot be detached
+    RCSwitch::nReceiverISRAttached = true;
+    RCSwitch::nReceiverSkipISR = false;
 #else // Arduino
     attachInterrupt(this->nReceiverInterrupt, handleInterrupt, CHANGE);
 #endif
@@ -567,9 +574,11 @@ void RCSwitch::enableReceive() {
  * Disable receiving data
  */
 void RCSwitch::disableReceive() {
-#if not defined(RaspberryPi) // Arduino
+#if defined(RaspberryPi) // Raspberry Pi: for Raspberry Pi (wiringPi) you can't unregister the ISR
+  RCSwitch::nReceiverSkipISR = true;
+#else // Arduino
   detachInterrupt(this->nReceiverInterrupt);
-#endif // For Raspberry Pi (wiringPi) you can't unregister the ISR
+#endif
   this->nReceiverInterrupt = -1;
 }
 
@@ -669,7 +678,10 @@ bool RECEIVE_ATTR RCSwitch::receiveProtocol(const int p, unsigned int changeCoun
 }
 
 void RECEIVE_ATTR RCSwitch::handleInterrupt() {
-
+  #if defined(RaspberryPi) // Raspberry Pi
+  if (RCSwitch::nReceiverSkipISR) return; //Because on Raspberry it is not possible to detach the ISR
+  #endif
+  
   static unsigned int changeCount = 0;
   static unsigned long lastTime = 0;
   static unsigned int repeatCount = 0;

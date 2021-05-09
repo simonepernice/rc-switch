@@ -1,3 +1,6 @@
+# Modification
+This is a modified version of RC-Switch. It contains the fix for a bug (preent only on Raspberry Pi). The bug does not allow to receive after sending some data. The library is modified so that it is still compatible to Arduino. Thank you very to sui77 and the other contributors for a so smart and useful library.
+
 # rc-switch
 [![arduino-library-badge](https://www.ardu-badge.com/badge/rc-switch.svg?)](https://www.ardu-badge.com/rc-switch)
 [![Build Status](https://travis-ci.org/sui77/rc-switch.svg?branch=master)](https://travis-ci.org/sui77/rc-switch)
@@ -5,7 +8,7 @@
 Use your Arduino or [Raspberry Pi](https://github.com/r10r/rcswitch-pi) to operate remote radio controlled devices
 
 ## Download
-https://github.com/sui77/rc-switch/releases/latest
+https://github.com/simonepernice/rc-switch/releases/latest
 
 rc-switch is also listed in the arduino library manager.
 
